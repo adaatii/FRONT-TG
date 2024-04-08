@@ -1,0 +1,111 @@
+:root {
+  /* COLORS SYSTEM */
+  --primary: #5B3422;
+  --secondary: #225B56;
+
+  --border: #5B3422;
+  --shadown: #35251D;
+  --background: #F0F0F0;
+  --components: #F9F9FB;
+  --intermadiate: #A69289;
+
+  /* GLASS COLORS */
+  --primaryGlass: #5B3422cc;
+
+  /* TYPOGRAPHY */
+  --text-d: #090604;
+  --text-l: #F6F6ED;
+  --text-g: #737482;
+  --text-primary: var(--primary);
+  --text-disabled: var(--secondary);
+
+  /* FONT */
+  --fnt-sz-xs: 0.25rem;
+  --fnt-sz-sm: 0.5rem;
+  --fnt-sz-md: 1rem;
+  --fnt-sz-lg: 1.5rem;
+  --fnt-sz-xl: 2rem;
+
+  --fnt-wg-xs: 300;
+  --fnt-wg-sm: 400;
+  --fnt-wg-md: 500;
+  --fnt-wg-lg: 600;
+  --fnt-wg-xl: 700;
+
+  /* ICONS */
+  --icon: var(--primary);
+
+  /* BUTTONS */
+  --btn: var(--primary);
+  --btn-hover: var(--secondary);
+
+  /* PADDING */
+  --padding-xs: 0.25rem;
+  --padding-sm: 0.5rem;
+  --padding-md: 1rem;
+  --padding-lg: 1.5rem;
+  --padding-xl: 2rem;
+
+  /* MARGIN */
+  --margin-xs: 0.25rem;
+  --margin-sm: 0.5rem;
+  --margin-md: 1rem;
+  --margin-lg: 1.5rem;
+  --margin-xl: 2rem;
+
+  /* GAP */
+  --gap-xs: 0.25rem;
+  --gap-sm: 0.5rem;
+  --gap-md: 1rem;
+  --gap-lg: 1.5rem;
+  --gap-xl: 2rem;
+
+  /* BORDER-RADIUS */
+  --bd-rds-xs: 0.25rem;
+  --bd-rds-sm: 0.5rem;
+  --bd-rds-md: 1rem;
+  --bd-rds-lg: 1.5rem;
+  --bd-rds-xl: 2rem;
+
+  /* TRANSITION */
+  --trns: all 0.25s ease-in-out forwards;
+
+  /* Z-INDEX */
+  --zindex: 1;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Lato", sans-serif !important;
+  scroll-behavior: smooth;
+
+  &::-webkit-scrollbar {
+    width: 0.5rem;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--primary);
+    border-radius: var(--bd-rds-lg);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--components);
+  }
+}
+
+
+.MuiFormLabel-root {
+  color: var(--primary) !important;
+}
+
+.MuiTablePagination-selectLabel {
+  color: var(--primary) !important;
+}
+
+.MuiTablePagination-displayedRows {
+  color: var(--primary) !important;
+}

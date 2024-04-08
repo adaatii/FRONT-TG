@@ -1,0 +1,12 @@
+.container {
+    display: flex;
+    width: 100dvw;
+    height: 100dvh;
+    background-color: var(--background);
+    overflow: hidden;
+
+    .content{
+        width: 100%;
+        padding: var(--padding-md);
+    }
+}
