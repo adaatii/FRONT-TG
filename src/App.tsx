@@ -9,6 +9,7 @@ const theme = new Theme();
 const rootStyle = getComputedStyle(document.documentElement);
 
 const cssVariables = {
+  primary: rootStyle.getPropertyValue("--primary").trim(),
   secondary: rootStyle.getPropertyValue("--secondary").trim(),
   background: rootStyle.getPropertyValue("--background").trim(),
   textDark: rootStyle.getPropertyValue("--text-d").trim(),
@@ -20,7 +21,7 @@ const materialTheme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: theme.primary,
+      main: cssVariables.primary,
     },
     secondary: {
       main: cssVariables.secondary,

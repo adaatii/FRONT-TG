@@ -1,9 +1,15 @@
+import { AnySoaRecord } from 'dns';
 import Connection from '../Connection';
 import setting from './settings/employers';
 
-const getDeliveryData = (type: string, data: any) => {
-    const config = setting.employee(type, data);
+export const getEmployeeData = () => {
+    const config = setting.employee("GET", null);
     return Connection.getApiResult(...config);
 }
 
-export default getDeliveryData; 
+export const postEmployeeData = (data: any) => {
+    const config = setting.employee("POST", data);
+    return Connection.getApiResult(...config);
+}
+
+export default getEmployeeData; 
