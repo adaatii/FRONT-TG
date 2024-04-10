@@ -6,8 +6,8 @@ const apiSettings = {
   ): [Object, Object | null] => [
       {
         method: type,
-        url: "/employee",
-        data : data
+        url: (type === "PUT" || type === "DELETE")  ? `/employee/${parseInt(data.id)}` : "/employee",
+        data : (type != "DELETE") ? JSON.stringify(data) : null,
       },
       null,
     ],

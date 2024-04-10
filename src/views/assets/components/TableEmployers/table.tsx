@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import {
     Box,
@@ -16,6 +16,7 @@ import {
 import { ArrowLineLeft, CaretLeft, CaretRight, ArrowLineRight, Pencil, Trash } from '@phosphor-icons/react';
 
 export interface EmployeeData {
+    id: number;
     name: string;
     email: string;
     cpf: number;
@@ -26,6 +27,7 @@ export interface EmployeeData {
 
 interface TableDefaultProps {
     data: EmployeeData[];
+    onModalChange: (modal: boolean, employeeData?: EmployeeData) => void; // Ajuste aqui
 }
 
 interface TablePaginationActionsProps {
@@ -37,6 +39,7 @@ interface TablePaginationActionsProps {
         newPage: number,
     ) => void;
 }
+
 
 function TablePaginationActions(props: TablePaginationActionsProps) {
     const theme = useTheme();
@@ -94,9 +97,15 @@ function TablePaginationActions(props: TablePaginationActionsProps) {
     );
 }
 
-export default function TableDefault({ data }: TableDefaultProps) {
+export default function TableDefault({ data, onModalChange }: TableDefaultProps) {
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
+
+    const [activeButton, setActiveButton] = useState(false);
+    const handleActiveButton = (modal: boolean, employeeData?: EmployeeData) => {
+        onModalChange(modal, employeeData);
+        setActiveButton(modal);
+    }
 
     // Avoid a layout jump when reaching the last page with empty rows.
     const emptyRows =
@@ -156,7 +165,7 @@ export default function TableDefault({ data }: TableDefaultProps) {
                             </TableCell>
                             <TableCell component="th" scope="row" style={{ width: 160 }} align="center">
                                 <div>
-                                    <IconButton color='success'>
+                                    <IconButton color='success' onClick={() => handleActiveButton(true, row)}>
                                         <Pencil weight="fill" />
                                     </IconButton>
                                     <IconButton color='error'>
