@@ -1,6 +1,6 @@
 import style from "./sidebar.module.scss";
 import { useState } from "react";
-import { Button } from "@mui/material";
+import { IconButton, Tooltip, Zoom } from "@mui/material";
 import { Users, Package, Bookmark } from "@phosphor-icons/react";
 
 interface ISidebar {
@@ -19,82 +19,25 @@ function Sidebar({ onViewChange }: ISidebar) {
         <div className={style.container}>
             <div className={style.logo}></div>
             <div className={style.options}>
-                <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    sx={{
-                        padding: "var(--padding-md)",
-                        display: "flex",
-                        flexDirection: "column",
-                        backgroundColor:
-                            activeButton === 'employers' ? 'var(--primary)' : 'var(--components)',
-                        boxShadow: "none",
-                    }}
-                    onClick={() => handleActiveButton('employers')}
-                >
-                    <Users weight="fill" size={20} color={
-                        activeButton === 'employers' ? 'var(--text-l)' : 'var(--primary)'
-                    } />
-                    <span
-                        style={{
-                            color: activeButton === 'employers' ? 'var(--text-l)' : 'var(--primary)'
-                        }}
-                    >
-                        Func.
-                    </span>
-                </Button>
-                <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    sx={{
-                        padding: "var(--padding-md)",
-                        display: "flex",
-                        flexDirection: "column",
-                        backgroundColor:
-                            activeButton === 'products' ? 'var(--primary)' : 'var(--components)',
-                        boxShadow: "none",
-                    }}
-                    onClick={() => handleActiveButton('products')}
-                >
-                    <Package weight="fill" size={20}
-                        color={
-                            activeButton === 'products' ? 'var(--text-l)' : 'var(--primary)'
-                        }
-                    />
-                    <span
-                        style={{
-                            color: activeButton === 'products' ? 'var(--text-l)' : 'var(--primary)'
-                        }}
-                    >Prod.</span>
-                </Button>
-                <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    sx={{
-                        padding: "var(--padding-md)",
-                        display: "flex",
-                        flexDirection: "column",
-                        backgroundColor:
-                            activeButton === 'categories' ? 'var(--primary)' : 'var(--components)',
-                        boxShadow: "none",
-                    }}
-                    onClick={() => handleActiveButton('categories')}
-                >
-                    <Bookmark weight="fill" size={20}
-                        color={
-                            activeButton === 'categories' ? 'var(--text-l)' : 'var(--primary)'
-                        }
-                    />
-                    <span
-                        style={{
-                            color: activeButton === 'categories' ? 'var(--text-l)' : 'var(--primary)'
-                        }}
-                    >Categ.</span>
-                </Button>
-
+                <Tooltip title="Funcionários" placement="right" TransitionComponent={Zoom}>
+                    <IconButton color="primary" onClick={() => handleActiveButton('employers')}>
+                        <Users weight="fill" size={26} color={
+                            activeButton === 'employers' ? 'var(--primary)' : 'var(--intermadiate)'} />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title="Produtos" placement="right" TransitionComponent={Zoom}>
+                    <IconButton color="primary" onClick={() => handleActiveButton('products')}>
+                        <Package weight="fill" size={26}
+                            color={
+                                activeButton === 'products' ? 'var(--primary)' : 'var(--intermadiate)'} />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title="Categorias" placement="right" TransitionComponent={Zoom}>
+                    <IconButton color="primary" onClick={() => handleActiveButton('categories')}>
+                        <Bookmark weight="fill" size={26}
+                            color={activeButton === 'categories' ? 'var(--primary)' : 'var(--intermadiate)'} />
+                    </IconButton>
+                </Tooltip>
             </div>
         </div>
     );

@@ -4,9 +4,10 @@
     justify-content: center;
     align-items: center;
     width: auto;
-    height: 100dvh;
+    height: 90dvh;
     padding: var(--padding-md);
-    background-color: var(--components);
+    border-right: 2px solid var(--intermadiate);
+    background-color: var(--background);
 
     .options {
         display: flex;

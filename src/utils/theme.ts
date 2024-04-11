@@ -7,7 +7,7 @@ export class Theme {
   complementary: string;
 
   constructor() {
-    this.primary = '#c44a13';
+    this.primary = '#9C6644';
     this.success = '';
     this.alert = '';
     this.danger = '';

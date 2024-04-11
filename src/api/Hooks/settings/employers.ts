@@ -1,3 +1,4 @@
+// Request Settings for API calls
 const apiSettings = {
   employee: (
     type: string,
@@ -7,11 +8,10 @@ const apiSettings = {
       {
         method: type,
         url: (type === "PUT" || type === "DELETE")  ? `/employee/${parseInt(data.id)}` : "/employee",
-        data : (type != "DELETE") ? JSON.stringify(data) : null,
+        data : (type !== "DELETE") ? JSON.stringify(data) : null,
       },
       null,
     ],
 };
-
 
 export default apiSettings;

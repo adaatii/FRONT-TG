@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
+import moment from 'moment';
+
 import {
     Box,
     Table,
@@ -11,23 +13,26 @@ import {
     TableRow,
     TableHead,
     Paper,
-    IconButton
+    IconButton,
 } from '@mui/material';
 import { ArrowLineLeft, CaretLeft, CaretRight, ArrowLineRight, Pencil, Trash } from '@phosphor-icons/react';
 
+// EmployeeData interface
 export interface EmployeeData {
     id: number;
     name: string;
     email: string;
-    cpf: number;
+    cpf: string;
     status: boolean;
     created_at: string;
     updated_at: string;
 }
 
+// TableDefaultProps interface
 interface TableDefaultProps {
     data: EmployeeData[];
-    onModalChange: (modal: boolean, employeeData?: EmployeeData) => void; // Ajuste aqui
+    onModalChange: (modal: boolean, employeeData?: EmployeeData) => void;
+    onDialogChange: (modal: boolean, employeeData?: EmployeeData) => void;
 }
 
 interface TablePaginationActionsProps {
@@ -39,7 +44,6 @@ interface TablePaginationActionsProps {
         newPage: number,
     ) => void;
 }
-
 
 function TablePaginationActions(props: TablePaginationActionsProps) {
     const theme = useTheme();
@@ -62,7 +66,6 @@ function TablePaginationActions(props: TablePaginationActionsProps) {
     const handleLastPageButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
     };
-
     return (
         <Box sx={{ flexShrink: 0, ml: 2.5 }}>
             <IconButton
@@ -97,17 +100,24 @@ function TablePaginationActions(props: TablePaginationActionsProps) {
     );
 }
 
-export default function TableDefault({ data, onModalChange }: TableDefaultProps) {
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(5);
+export default function TableDefault(props: TableDefaultProps) {
+    const [page, setPage] = React.useState(0); // Pagination
+    const [rowsPerPage, setRowsPerPage] = React.useState(10); // Rows per page
+    const { data, onModalChange, onDialogChange } = props; // Data
+    const [, setEditButton] = useState(false); // Edit button
+    const [, setDeleteButton] = useState(false); // Delete button
 
-    const [activeButton, setActiveButton] = useState(false);
-    const handleActiveButton = (modal: boolean, employeeData?: EmployeeData) => {
+
+    const handleEditButton = (modal: boolean, employeeData?: EmployeeData) => {
         onModalChange(modal, employeeData);
-        setActiveButton(modal);
+        setEditButton(modal);
     }
 
-    // Avoid a layout jump when reaching the last page with empty rows.
+    const handleDeleteOpen = (deletebtn: boolean, employeeData?: EmployeeData) => {
+        onDialogChange(deletebtn, employeeData);
+        setDeleteButton(deletebtn);
+    }
+
     const emptyRows =
         page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
 
@@ -124,6 +134,18 @@ export default function TableDefault({ data, onModalChange }: TableDefaultProps)
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
+
+    // Apply CPF mask function
+    const applyCpfMask = (cpf: string): string => {
+        let value = cpf.replace(/\D/g, '');
+
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+        return value;
+    };
+
 
     return (
         <TableContainer component={Paper}>
@@ -144,7 +166,7 @@ export default function TableDefault({ data, onModalChange }: TableDefaultProps)
                         ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                         : data
                     ).map((row) => (
-                        <TableRow key={row.name}>
+                        <TableRow key={row.id}>
                             <TableCell component="th" scope="row" style={{ width: 160 }} align="center">
                                 {row.name}
                             </TableCell>
@@ -152,23 +174,23 @@ export default function TableDefault({ data, onModalChange }: TableDefaultProps)
                                 {row.email}
                             </TableCell>
                             <TableCell component="th" scope="row" style={{ width: 160 }} align="center">
-                                {row.cpf}
+                                {applyCpfMask(row.cpf)}
                             </TableCell>
                             <TableCell component="th" scope="row" style={{ width: 160 }} align="center">
                                 {row.status ? 'Ativo' : 'Inativo'}
                             </TableCell>
                             <TableCell component="th" scope="row" style={{ width: 160 }} align="center">
-                                {row.created_at}
+                                {moment(row.created_at).format('DD/MM/YYYY HH:mm:ss')}
                             </TableCell>
                             <TableCell component="th" scope="row" style={{ width: 160 }} align="center">
-                                {row.updated_at}
+                                {moment(row.updated_at).format('DD/MM/YYYY HH:mm:ss')}
                             </TableCell>
                             <TableCell component="th" scope="row" style={{ width: 160 }} align="center">
                                 <div>
-                                    <IconButton color='success' onClick={() => handleActiveButton(true, row)}>
+                                    <IconButton color='success' onClick={() => handleEditButton(true, row)}>
                                         <Pencil weight="fill" />
                                     </IconButton>
-                                    <IconButton color='error'>
+                                    <IconButton color='error' onClick={() => handleDeleteOpen(true, row)}>
                                         <Trash weight="fill" />
                                     </IconButton>
                                 </div>
@@ -184,7 +206,7 @@ export default function TableDefault({ data, onModalChange }: TableDefaultProps)
                 <TableFooter>
                     <TableRow>
                         <TablePagination
-                            rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                            rowsPerPageOptions={[10, 20, 50, { label: 'All', value: -1 }]}
                             colSpan={3}
                             count={data.length}
                             rowsPerPage={rowsPerPage}

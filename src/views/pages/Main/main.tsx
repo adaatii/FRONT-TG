@@ -20,7 +20,6 @@ function Main() {
         {currentView === 'products' && <Products />}
         {currentView === 'categories' && <Categories />}
       </div>
-
     </div>
   );
 }
