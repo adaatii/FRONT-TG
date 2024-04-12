@@ -1,0 +1,98 @@
+.container {
+    width: 100%;
+    height: 100%;
+    padding: var(--padding-lg);
+    border-radius: var(--bd-rds-sm);
+    background: var(--components);
+    box-shadow: 0 0 1px 0 var(--shadown);
+
+    .header {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: var(--gap-sm);
+
+        span {
+            color: var(--primary);
+            font-size: var(--fnt-sz-xl);
+            font-weight: var(--fnt-wg-md);
+        }
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: var(--gap-sm);
+        padding-inline: var(--padding-lg);
+
+        .containerModal {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            gap: var(--gap-md);
+            padding: var(--padding-lg);
+            background-color: var(--background);
+
+            span {
+                color: var(--primary);
+                font-size: var(--fnt-sz-lg);
+                font-weight: var(--fnt-wg-lg);
+            }
+
+            .contentForm {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: var(--gap-sm);
+
+            }
+        }
+
+    }
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        width: 100%;
+        height: 100%;
+        padding: var(--padding-lg);
+        gap: var(--gap-sm);
+
+        .containerModal {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            gap: var(--gap-md);
+            padding: var(--padding-lg);
+            background-color: var(--background);
+
+            span {
+                color: var(--primary);
+                font-size: var(--fnt-sz-lg);
+                font-weight: var(--fnt-wg-lg);
+            }
+
+            .contentForm {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: var(--gap-sm);
+
+            }
+        }
+    }
+
+}
+
+.txtField {
+    span {
+        color: var(--text-d) !important;
+    }
+}

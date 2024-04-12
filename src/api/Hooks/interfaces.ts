@@ -11,3 +11,9 @@ export interface category {
   description?: string;
 }
 
+export interface product {
+  id?: number;
+  description?: string;
+  price?: number;
+  category_id?: number;
+}
