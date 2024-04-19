@@ -1,8 +1,13 @@
 // Request Settings for API calls
 const apiSettings = {
-  employee: (type: string, data: any): [Object, Object | null] => [
+
+  employee: (type: string, token:string , data: any): [Object, Object | null] => [
     {
       method: type,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       url:
         type === "PUT" || type === "DELETE"
           ? `/employee/${parseInt(data.id)}`
@@ -14,4 +19,3 @@ const apiSettings = {
 };
 
 export default apiSettings;
-

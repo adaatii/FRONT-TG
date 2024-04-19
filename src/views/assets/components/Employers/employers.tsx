@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, SyntheticEvent } from "react";
 import style from "./employers.module.scss";
 import { Users, Plus } from "@phosphor-icons/react";
 import TableDefault, { EmployeeData } from "../TableEmployers/table";
@@ -11,6 +11,8 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
+  Snackbar, Alert, Slide,
+  SnackbarCloseReason,
 } from "@mui/material";
 import {
   getEmployeeData,
@@ -18,6 +20,7 @@ import {
   putEmployeeData,
   deleteEmployeeData,
 } from "../../../../api/Hooks/employers";
+import CookieManager from "../../../../utils/CookieManager";
 
 // DataCard interface
 interface DataCard {
@@ -37,6 +40,25 @@ function Employers() {
   const [modalUpdateEmployee, setModalUpdateEmployee] = useState(false); // Open Update Employee Modal
   const [selectedEmployee, setSelectedEmployee] = useState<any | null>(null); // Selected Employee
   const [dialogDeleteEmployee, setDialogDeleteEmployee] = useState(false); // Open Delete Employee Dialog
+  const [token, setToken] = useState(""); // Token
+  const [openToast, setOpenToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"error" | "warning" | "info" | "success">("success");
+
+  // Função para abrir o Snackbar
+  const showToast = (message: string, type: "error" | "warning" | "info" | "success") => {
+    setToastMessage(message);
+    setToastType(type);
+    setOpenToast(true);
+  };
+
+  // Função para fechar o Snackbar
+  const handleToastClose = (event: Event | SyntheticEvent<Element, Event>, reason?: SnackbarCloseReason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenToast(false);
+  };
 
   const handleRegisterEmployeeOpen = () => setModalRegisterEmployee(true); // Open Register Employee Modal
   const handleRegisterEmployeeClose = () => {
@@ -44,19 +66,31 @@ function Employers() {
     handleModalClose();
   }; // Close Register Employee Modal
 
+  const cookieManager = new CookieManager();
+
   // Get all employees when the component is mounted
+
   useEffect(() => {
-    getEmployer();
+    // Verifica se o token está disponível
+    const checkToken = () => {
+      const token = cookieManager.Token;
+      if (token) {
+        setToken(token);
+        getEmployer(token);
+      } else {
+        setTimeout(checkToken, 100);
+      }
+    };
+    checkToken();
   }, []);
 
   // Get all employees
-  const getEmployer = () => {
-    getEmployeeData()
+  const getEmployer = (token: string) => {
+    getEmployeeData(token)
       .then(([data]) => {
         setDataCard(data);
       })
       .catch((error) => {
-        console.log(error);
       });
   };
 
@@ -64,37 +98,57 @@ function Employers() {
   const registerEmployer = (employeeData: any) => {
     const unmaskedCpf = removeCpfMask(employeeData.cpf);
 
-    postEmployeeData({ ...employeeData, cpf: unmaskedCpf })
-      .then(() => {
+    postEmployeeData({ ...employeeData, cpf: unmaskedCpf }, token)
+      .then((data) => {
         setModalRegisterEmployee(false);
-        getEmployer();
+        getEmployer(token);
+        if (data[0].message) {
+          showToast("Funcionário cadastrado com sucesso", "success");
+        } else {
+          console.log(data[0].errors.email[0]);
+          if (data[0].errors.email[0]) {
+            switch (data[0].errors.email[0]) {
+              case "The email has already been taken.":
+                showToast("Email já cadastrado", "error");
+                break;
+              case "Cpf already exists":
+                showToast("CPF já cadastrado", "error");
+                break;
+              default:
+                showToast("Falha ao cadastrar funcionario", "error");
+                break;
+            }
+          }
+        }
       })
       .catch((error) => {
-        console.log(error);
+        showToast("Falha ao cadastrar funcionario", "error");
       });
   };
 
   // Update employee data
   const updateEmployer = (employeeData: any) => {
     const unmaskedCpf = removeCpfMask(employeeData.cpf);
-    putEmployeeData({ ...employeeData, cpf: unmaskedCpf })
-      .then(() => {
+    putEmployeeData({ ...employeeData, cpf: unmaskedCpf }, token)
+      .then((data) => {
         handleModalClose();
-        getEmployer();
+        getEmployer(token);
+        showToast("Funcionário atualizado com sucesso", "success");
       })
       .catch((error) => {
-        console.log(error);
+        showToast("Falha ao atualizar funcionario", "error");
       });
   };
 
   // Delete employee
   const deleteEmployer = (employeeData: any) => {
-    deleteEmployeeData(employeeData)
-      .then(() => {
-        getEmployer();
+    deleteEmployeeData(employeeData, token)
+      .then((data) => {
+        getEmployer(token);
+        showToast("Funcionário deletado com sucesso", "success");
       })
       .catch((error) => {
-        console.log(error);
+        showToast("Falha ao deletar funcionario", "error");
       });
   };
 
@@ -107,14 +161,14 @@ function Employers() {
   // Handle employee data
   const employees: EmployeeData[] = dataCard
     ? dataCard.body.employees.map((employee) => ({
-        id: employee.id,
-        name: employee.name,
-        email: employee.email,
-        cpf: employee.cpf,
-        status: employee.status,
-        created_at: employee.created_at,
-        updated_at: employee.updated_at,
-      }))
+      id: employee.id,
+      name: employee.name,
+      email: employee.email,
+      cpf: employee.cpf,
+      status: employee.status,
+      created_at: employee.created_at,
+      updated_at: employee.updated_at,
+    }))
     : [];
 
   // Handle modal update employee
@@ -181,9 +235,23 @@ function Employers() {
     return cpf.replace(/\D/g, ""); // Remove all non-digit characters
   };
 
+
   // Render: Employers component
   return (
     <div className={style.container}>
+      {openToast && (
+        <Snackbar
+          open={openToast}
+          autoHideDuration={3000}
+          onClose={handleToastClose}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          TransitionComponent={Slide}
+        >
+          <Alert severity={toastType} onClose={handleToastClose} sx={{ width: '100%' }}>
+            {toastMessage}
+          </Alert>
+        </Snackbar>
+      )}
       <div className={style.header}>
         <span>Funcionário</span>
         <Users weight="fill" size={32} color="var(--primary)" />

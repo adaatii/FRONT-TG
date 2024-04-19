@@ -3,27 +3,27 @@ import setting from "./settings/categories";
 import { category } from "./interfaces";
 
 // Get all employees
-export const getCategoryData = () => {
-  const config = setting.category("GET", null);
+export const getCategoryData = (token:string) => {
+  const config = setting.category("GET", token, null);
   return Connection.getApiResult(...config);
 };
 
 // Register a new employee
-export const postCategoryData = (data: category) => {
-  const config = setting.category("POST", data);
+export const postCategoryData = (data: category, token:string) => {
+  const config = setting.category("POST", token, data);
   return Connection.getApiResult(...config);
 };
 
 // Update employee data
-export const putCategoryData = (data: category) => {
-  const config = setting.category("PUT", data);
+export const putCategoryData = (data: category, token:string) => {
+  const config = setting.category("PUT", token,data);
   return Connection.getApiResult(...config);
 };
 
 // Delete employee
-export const deleteCategoryData = (data: category) => {
+export const deleteCategoryData = (data: category, token:string) => {
   console.log(data);
-  const config = setting.category("DELETE", data);
+  const config = setting.category("DELETE", token, data);
   return Connection.getApiResult(...config);
 };
 

@@ -1,0 +1,85 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60vw;
+    height: 70vh;
+    border-radius: var(--bd-rds-sm);
+    background-color: var(--components);
+    box-shadow: 0 0 14px 1px var(--intermadiate);
+
+    .left {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: column;
+        width: 50%;
+        height: 100%;
+        border-radius: var(--bd-rds-sm) 0 0 var(--bd-rds-sm);
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: var(--padding-md);
+            padding-top: var(--padding-xl);
+
+            .title {
+                font-size: var(--fnt-sz-xl);
+                font-weight: var(--fnt-wg-lg);
+                color: var(--primary);
+            }
+
+            .subtitle {
+                font-size: var(--fnt-sz-md);
+                font-weight: var(--fnt-wg-md);
+                color: var(--secondary);
+            }
+        }
+
+        .form{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: var(--padding-xl);
+            gap: var(--gap-md);
+        }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 101%;
+            padding: var(--padding-sm);
+            gap: var(--gap-sm);
+            border-radius: 0 0 0 var(--bd-rds-sm);
+
+            span {
+                font-size: var(--fnt-sz-md);
+                color: var(--intermadiate);
+            }
+
+            .name {
+                font-weight: var(--fnt-wg-md);
+                color: var(--primary);
+            }
+        }
+    }
+
+    .right {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 50%;
+        height: 100%;
+        border-radius: 0 var(--bd-rds-sm) var(--bd-rds-sm) 0;
+        background-color: var(--primary);
+    }
+}

@@ -23,6 +23,8 @@ import {
   deleteProductData,
 } from "../../../../api/Hooks/products";
 import { getCategoryData } from "../../../../api/Hooks/categories";
+import CookieManager from "../../../../utils/CookieManager";
+
 
 // DataCard interface
 interface DataCard {
@@ -43,16 +45,31 @@ function Products() {
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null); // Selected Product
   const [dialogDeleteProduct, setDialogDeleteProduct] = useState(false); // Open Delete Product Dialog
   const [categories, setCategories] = useState([]); // Categories
+  const [token, setToken] = useState(""); // Token
+
+
+  const cookieManager = new CookieManager();
 
 
   // Get all Products when the component is mounted
   useEffect(() => {
-    getProduct();
+    // Verifica se o token está disponível
+    const checkToken = () => {
+      const token = cookieManager.Token;
+      if (token) {
+        setToken(token);
+        getProduct(token);
+      } else {
+        setTimeout(checkToken, 100);
+      }
+    };
+
+    checkToken();
   }, []);
 
   // Get all Products
-  const getProduct = () => {
-    getProductData()
+  const getProduct = (token: string) => {
+    getProductData(token)
       .then(([data]) => {
         setDataCard(data);
       })
@@ -64,10 +81,10 @@ function Products() {
   // Register a new Product
   const registerProduct = (ProductData: any) => {
     const priceValue = convertToNumericValue(price);
-    postProductData({ ...ProductData, price: priceValue })
+    postProductData({ ...ProductData, price: priceValue }, token)
       .then(() => {
         setModalRegisterProduct(false);
-        getProduct();
+        getProduct(token);
       })
       .catch((error) => {
         console.log(error);
@@ -76,10 +93,10 @@ function Products() {
 
   // Update Product data
   const updateProduct = (ProductData: any) => {
-    putProductData(ProductData)
+    putProductData(ProductData, token)
       .then(() => {
         handleModalClose();
-        getProduct();
+        getProduct(token);
       })
       .catch((error) => {
         console.log(error);
@@ -88,9 +105,9 @@ function Products() {
 
   // Delete Product
   const deleteProduct = (ProductData: any) => {
-    deleteProductData(ProductData)
+    deleteProductData(ProductData, token)
       .then(() => {
-        getProduct();
+        getProduct(token);
       })
       .catch((error) => {
         console.log(error);
@@ -100,7 +117,7 @@ function Products() {
   // Get all Categories
   const getCategory = async () => {
     try {
-      const [data] = await getCategoryData();
+      const [data] = await getCategoryData(token);
       setCategories(data.body.categories);
     } catch (error) {
       console.error("Erro ao buscar categorias:", error);

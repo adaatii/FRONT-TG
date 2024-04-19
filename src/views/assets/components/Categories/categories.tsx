@@ -18,6 +18,7 @@ import {
   putCategoryData,
   deleteCategoryData,
 } from "../../../../api/Hooks/categories";
+import CookieManager from "../../../../utils/CookieManager";
 
 // DataCard interface
 interface DataCard {
@@ -34,6 +35,7 @@ function Categories() {
   const [modalUpdateCategory, setModalUpdateCategory] = useState(false); // Open Update Category Modal
   const [selectedCategory, setSelectedCategory] = useState<any | null>(null); // Selected Category
   const [dialogDeleteCategory, setDialogDeleteCategory] = useState(false); // Open Delete Category Dialog
+  const [token, setToken] = useState(""); // Token
 
   const handleRegisterCategoryOpen = () => setModalRegisterCategory(true); // Open Register Category Modal
   const handleRegisterCategoryClose = () => {
@@ -41,14 +43,29 @@ function Categories() {
     handleModalClose();
   }; // Close Register Category Modal
 
+
+  const cookieManager = new CookieManager();
+
   // Get all categories when the component is mounted
   useEffect(() => {
-    getCategory();
+    // Verifica se o token está disponível
+    const checkToken = () => {
+      const token = cookieManager.Token;
+      if (token) {
+        setToken(token);
+        getCategory(token);
+      } else {
+        setTimeout(checkToken, 100);
+      }
+    };
+
+    checkToken();
   }, []);
 
+
   // Get all categories
-  const getCategory = () => {
-    getCategoryData()
+  const getCategory = (token: string) => {
+    getCategoryData(token)
       .then(([data]) => {
         setDataCard(data);
       })
@@ -59,10 +76,10 @@ function Categories() {
 
   // Register a new category
   const registerCategory = (categoryData: any) => {
-    postCategoryData(categoryData)
+    postCategoryData(categoryData, token)
       .then(() => {
         setModalRegisterCategory(false);
-        getCategory();
+        getCategory(token);
       })
       .catch((error) => {
         console.log(error);
@@ -71,10 +88,10 @@ function Categories() {
 
   // Update catagory data
   const updateCategory = (categoryData: any) => {
-    putCategoryData(categoryData)
+    putCategoryData(categoryData, token)
       .then(() => {
         handleModalClose();
-        getCategory();
+        getCategory(token);
       })
       .catch((error) => {
         console.log(error);
@@ -83,9 +100,9 @@ function Categories() {
 
   // Delete category
   const deleteCategory = (categoryData: any) => {
-    deleteCategoryData(categoryData)
+    deleteCategoryData(categoryData, token)
       .then(() => {
-        getCategory();
+        getCategory(token);
       })
       .catch((error) => {
         console.log(error);
@@ -101,12 +118,12 @@ function Categories() {
   // Handle employee data
   const categories: CategoryData[] = dataCard
     ? dataCard.body.categories.map((category) => ({
-        id: category.id,
-        description: category.description,
-        status: category.status,
-        created_at: category.created_at,
-        updated_at: category.updated_at,
-      }))
+      id: category.id,
+      description: category.description,
+      status: category.status,
+      created_at: category.created_at,
+      updated_at: category.updated_at,
+    }))
     : [];
 
   // Handle modal update category

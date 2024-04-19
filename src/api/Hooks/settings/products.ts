@@ -1,8 +1,12 @@
 // Request Settings for API calls
 const apiSettings = {
-  product: (type: string, data: any): [Object, Object | null] => [
+  product: (type: string, token: string, data: any): [Object, Object | null] => [
     {
       method: type,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       url:
         type === "PUT" || type === "DELETE"
           ? `/product/${parseInt(data.id)}`
