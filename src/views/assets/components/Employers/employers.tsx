@@ -1,4 +1,4 @@
-import React, { useEffect, useState, SyntheticEvent } from "react";
+import { useEffect, useState, SyntheticEvent } from "react";
 import style from "./employers.module.scss";
 import { Users, Plus } from "@phosphor-icons/react";
 import TableDefault, { EmployeeData } from "../TableEmployers/table";
@@ -21,6 +21,7 @@ import {
   deleteEmployeeData,
 } from "../../../../api/Hooks/employers";
 import CookieManager from "../../../../utils/CookieManager";
+import errorHandling from "../../../../utils/errorHandling";
 
 // DataCard interface
 interface DataCard {
@@ -41,24 +42,24 @@ function Employers() {
   const [selectedEmployee, setSelectedEmployee] = useState<any | null>(null); // Selected Employee
   const [dialogDeleteEmployee, setDialogDeleteEmployee] = useState(false); // Open Delete Employee Dialog
   const [token, setToken] = useState(""); // Token
-  const [openToast, setOpenToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<"error" | "warning" | "info" | "success">("success");
+  const [toastQueue, setToastQueue] = useState<ToastMessage[]>([]);
 
-  // Função para abrir o Snackbar
-  const showToast = (message: string, type: "error" | "warning" | "info" | "success") => {
-    setToastMessage(message);
-    setToastType(type);
-    setOpenToast(true);
+  type ToastMessage = {
+    message: string;
+    type: "error" | "warning" | "info" | "success";
   };
 
-  // Função para fechar o Snackbar
+  const showToast = (message: string, type: ToastMessage['type']) => {
+    setToastQueue(prev => [...prev, { message, type }]);
+  };
+
   const handleToastClose = (event: Event | SyntheticEvent<Element, Event>, reason?: SnackbarCloseReason) => {
     if (reason === 'clickaway') {
       return;
     }
-    setOpenToast(false);
+    setToastQueue(prev => prev.slice(1));
   };
+
 
   const handleRegisterEmployeeOpen = () => setModalRegisterEmployee(true); // Open Register Employee Modal
   const handleRegisterEmployeeClose = () => {
@@ -100,29 +101,15 @@ function Employers() {
 
     postEmployeeData({ ...employeeData, cpf: unmaskedCpf }, token)
       .then((data) => {
+        handleModalClose();
         setModalRegisterEmployee(false);
         getEmployer(token);
-        if (data[0].message) {
-          showToast("Funcionário cadastrado com sucesso", "success");
-        } else {
-          console.log(data[0].errors.email[0]);
-          if (data[0].errors.email[0]) {
-            switch (data[0].errors.email[0]) {
-              case "The email has already been taken.":
-                showToast("Email já cadastrado", "error");
-                break;
-              case "Cpf already exists":
-                showToast("CPF já cadastrado", "error");
-                break;
-              default:
-                showToast("Falha ao cadastrar funcionario", "error");
-                break;
-            }
-          }
-        }
+        const errors = errorHandling(data);
+        errors.forEach(error => {
+          showToast(error.text, error.type);
+        });
       })
       .catch((error) => {
-        showToast("Falha ao cadastrar funcionario", "error");
       });
   };
 
@@ -133,10 +120,12 @@ function Employers() {
       .then((data) => {
         handleModalClose();
         getEmployer(token);
-        showToast("Funcionário atualizado com sucesso", "success");
+        const errors = errorHandling(data);
+        errors.forEach(error => {
+          showToast(error.text, error.type);
+        });
       })
       .catch((error) => {
-        showToast("Falha ao atualizar funcionario", "error");
       });
   };
 
@@ -145,10 +134,12 @@ function Employers() {
     deleteEmployeeData(employeeData, token)
       .then((data) => {
         getEmployer(token);
-        showToast("Funcionário deletado com sucesso", "success");
+        const errors = errorHandling(data);
+        errors.forEach(error => {
+          showToast(error.text, error.type);
+        });
       })
       .catch((error) => {
-        showToast("Falha ao deletar funcionario", "error");
       });
   };
 
@@ -239,19 +230,21 @@ function Employers() {
   // Render: Employers component
   return (
     <div className={style.container}>
-      {openToast && (
+      {toastQueue.map((toast, index) => (
         <Snackbar
-          open={openToast}
-          autoHideDuration={3000}
+          key={index}
+          open={true}
+          autoHideDuration={4000}
           onClose={handleToastClose}
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
           TransitionComponent={Slide}
+          style={{ marginTop: index * 48, marginBottom: 48 }}
         >
-          <Alert severity={toastType} onClose={handleToastClose} sx={{ width: '100%' }}>
-            {toastMessage}
+          <Alert severity={toast.type} onClose={handleToastClose} sx={{ width: '100%' }}>
+            {toast.message}
           </Alert>
         </Snackbar>
-      )}
+      ))}
       <div className={style.header}>
         <span>Funcionário</span>
         <Users weight="fill" size={32} color="var(--primary)" />
@@ -409,7 +402,7 @@ function Employers() {
               fontSize: "var(--fnt-sg-lg)",
             }}
           >
-            {"Deseja realmente deletar esse funcionario?"}
+            {"Deseja realmente desativar esse funcionario?"}
           </DialogTitle>
           <DialogContent>
             <DialogContentText

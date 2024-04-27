@@ -22,7 +22,6 @@ export const putCategoryData = (data: category, token:string) => {
 
 // Delete employee
 export const deleteCategoryData = (data: category, token:string) => {
-  console.log(data);
   const config = setting.category("DELETE", token, data);
   return Connection.getApiResult(...config);
 };

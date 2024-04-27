@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, SyntheticEvent } from "react";
 import style from "./products.module.scss";
 import { Users, Plus } from "@phosphor-icons/react";
 import TableDefault, { ProductData } from "../TableProducts/table";
@@ -11,10 +11,9 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel
+  Snackbar, Alert, Slide,
+  SnackbarCloseReason,
 } from "@mui/material";
 import {
   getProductData,
@@ -24,7 +23,7 @@ import {
 } from "../../../../api/Hooks/products";
 import { getCategoryData } from "../../../../api/Hooks/categories";
 import CookieManager from "../../../../utils/CookieManager";
-
+import errorHandling from "../../../../utils/errorHandling";
 
 // DataCard interface
 interface DataCard {
@@ -46,7 +45,23 @@ function Products() {
   const [dialogDeleteProduct, setDialogDeleteProduct] = useState(false); // Open Delete Product Dialog
   const [categories, setCategories] = useState([]); // Categories
   const [token, setToken] = useState(""); // Token
+  const [toastQueue, setToastQueue] = useState<ToastMessage[]>([]);
 
+  type ToastMessage = {
+    message: string;
+    type: "error" | "warning" | "info" | "success";
+  };
+
+  const showToast = (message: string, type: ToastMessage['type']) => {
+    setToastQueue(prev => [...prev, { message, type }]);
+  };
+
+  const handleToastClose = (event: Event | SyntheticEvent<Element, Event>, reason?: SnackbarCloseReason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setToastQueue(prev => prev.slice(1));
+  };
 
   const cookieManager = new CookieManager();
 
@@ -58,6 +73,7 @@ function Products() {
       const token = cookieManager.Token;
       if (token) {
         setToken(token);
+        getCategory(token);
         getProduct(token);
       } else {
         setTimeout(checkToken, 100);
@@ -66,6 +82,7 @@ function Products() {
 
     checkToken();
   }, []);
+
 
   // Get all Products
   const getProduct = (token: string) => {
@@ -82,9 +99,14 @@ function Products() {
   const registerProduct = (ProductData: any) => {
     const priceValue = convertToNumericValue(price);
     postProductData({ ...ProductData, price: priceValue }, token)
-      .then(() => {
+      .then((data) => {
         setModalRegisterProduct(false);
         getProduct(token);
+        handleModalClose();
+        const errors = errorHandling(data);
+        errors.forEach(error => {
+          showToast(error.text, error.type);
+        });
       })
       .catch((error) => {
         console.log(error);
@@ -94,9 +116,13 @@ function Products() {
   // Update Product data
   const updateProduct = (ProductData: any) => {
     putProductData(ProductData, token)
-      .then(() => {
+      .then((data) => {
         handleModalClose();
         getProduct(token);
+        const errors = errorHandling(data);
+        errors.forEach(error => {
+          showToast(error.text, error.type);
+        });
       })
       .catch((error) => {
         console.log(error);
@@ -106,8 +132,12 @@ function Products() {
   // Delete Product
   const deleteProduct = (ProductData: any) => {
     deleteProductData(ProductData, token)
-      .then(() => {
+      .then((data) => {
         getProduct(token);
+        const errors = errorHandling(data);
+        errors.forEach(error => {
+          showToast(error.text, error.type);
+        });
       })
       .catch((error) => {
         console.log(error);
@@ -115,7 +145,7 @@ function Products() {
   };
 
   // Get all Categories
-  const getCategory = async () => {
+  const getCategory = async (token: any) => {
     try {
       const [data] = await getCategoryData(token);
       setCategories(data.body.categories);
@@ -124,14 +154,10 @@ function Products() {
     }
   };
 
-  useEffect(() => {
-    getCategory();
-  }, []);
 
   // Handle delete Product
   const handleDeleteProduct = (ProductData: any) => {
     deleteProduct(ProductData);
-    dialogDeleteClose();
   };
 
   // Open Register Product Modal
@@ -215,16 +241,35 @@ function Products() {
   const convertToNumericValue = (value: string) => {
     // Remover o símbolo 'R$' e substituir vírgulas por pontos
     const numeroFormatado = value.replace('R$', '').replace(',', '.');
-
-    // Converter para número
-    const numero = parseFloat(numeroFormatado).toFixed(2);
-
-    return numero;
-  };
-
+   
+    // Converter a string formatada para um número
+    const numero = parseFloat(numeroFormatado);
+   
+    // Dividir o número por 100 para ajustar a escala
+    const ajustado = numero / 100;
+   
+    // Retornar o número ajustado formatado com duas casas decimais
+    return ajustado.toFixed(2);
+   };
+   
   // Render: Products component
   return (
     <div className={style.container}>
+      {toastQueue.map((toast, index) => (
+        <Snackbar
+          key={index}
+          open={true}
+          autoHideDuration={4000}
+          onClose={handleToastClose}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          TransitionComponent={Slide}
+          style={{ marginTop: index * 48, marginBottom: 48 }}
+        >
+          <Alert severity={toast.type} onClose={handleToastClose} sx={{ width: '100%' }}>
+            {toast.message}
+          </Alert>
+        </Snackbar>
+      ))}
       <div className={style.header}>
         <span>Produto</span>
         <Users weight="fill" size={32} color="var(--primary)" />
@@ -339,15 +384,33 @@ function Products() {
                     onChange={(e) => setDescription(e.target.value)}
                   />
                   <TextField
+                    select
                     id="category_id"
+                    label="Categoria"
+                    value={category_id}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    variant="outlined"
                     fullWidth
                     size="small"
                     color="primary"
-                    label="Categoria"
-                    variant="outlined"
-                    value={category_id || ""}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                  />
+                  >
+                    <MenuItem disabled value=""
+                      sx={{
+                        color: "var(--primary)",
+                      }}
+                    >
+                      <em>Selecione uma categoria</em>
+                    </MenuItem>
+                    {categories.map((category: any) => (
+                      <MenuItem key={category.id} value={category.id} sx={{
+                        color: "var(--primary)",
+                        fontWeight: "var(--fnt-wg-sm)",
+                        fontSize: "var(--fnt-sg-sm)"
+                      }}>
+                        {category.description}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                   <Button
                     fullWidth
                     variant="contained"
@@ -374,7 +437,7 @@ function Products() {
               fontSize: "var(--fnt-sg-lg)",
             }}
           >
-            {"Deseja realmente deletar esse funcionario?"}
+            {"Deseja realmente deletar esse produto?"}
           </DialogTitle>
           <DialogContent>
             <DialogContentText

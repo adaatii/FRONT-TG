@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, SyntheticEvent } from "react";
 import style from "./categories.module.scss";
 import { Users, Plus } from "@phosphor-icons/react";
 import TableDefault, { CategoryData } from "../TableCategories/table";
@@ -11,6 +11,8 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
+  Snackbar, Alert, Slide,
+  SnackbarCloseReason,
 } from "@mui/material";
 import {
   getCategoryData,
@@ -19,6 +21,7 @@ import {
   deleteCategoryData,
 } from "../../../../api/Hooks/categories";
 import CookieManager from "../../../../utils/CookieManager";
+import errorHandling from "../../../../utils/errorHandling";
 
 // DataCard interface
 interface DataCard {
@@ -36,6 +39,23 @@ function Categories() {
   const [selectedCategory, setSelectedCategory] = useState<any | null>(null); // Selected Category
   const [dialogDeleteCategory, setDialogDeleteCategory] = useState(false); // Open Delete Category Dialog
   const [token, setToken] = useState(""); // Token
+  const [toastQueue, setToastQueue] = useState<ToastMessage[]>([]);
+
+  type ToastMessage = {
+    message: string;
+    type: "error" | "warning" | "info" | "success";
+  };
+
+  const showToast = (message: string, type: ToastMessage['type']) => {
+    setToastQueue(prev => [...prev, { message, type }]);
+  };
+
+  const handleToastClose = (event: Event | SyntheticEvent<Element, Event>, reason?: SnackbarCloseReason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setToastQueue(prev => prev.slice(1));
+  };
 
   const handleRegisterCategoryOpen = () => setModalRegisterCategory(true); // Open Register Category Modal
   const handleRegisterCategoryClose = () => {
@@ -77,9 +97,14 @@ function Categories() {
   // Register a new category
   const registerCategory = (categoryData: any) => {
     postCategoryData(categoryData, token)
-      .then(() => {
+      .then((data) => {
         setModalRegisterCategory(false);
         getCategory(token);
+        handleModalClose();
+        const errors = errorHandling(data);
+        errors.forEach(error => {
+          showToast(error.text, error.type);
+        });
       })
       .catch((error) => {
         console.log(error);
@@ -89,9 +114,13 @@ function Categories() {
   // Update catagory data
   const updateCategory = (categoryData: any) => {
     putCategoryData(categoryData, token)
-      .then(() => {
+      .then((data) => {
         handleModalClose();
         getCategory(token);
+        const errors = errorHandling(data);
+        errors.forEach(error => {
+          showToast(error.text, error.type);
+        });
       })
       .catch((error) => {
         console.log(error);
@@ -101,8 +130,12 @@ function Categories() {
   // Delete category
   const deleteCategory = (categoryData: any) => {
     deleteCategoryData(categoryData, token)
-      .then(() => {
+      .then((data) => {
         getCategory(token);
+        const errors = errorHandling(data);
+        errors.forEach(error => {
+          showToast(error.text, error.type);
+        });
       })
       .catch((error) => {
         console.log(error);
@@ -160,8 +193,23 @@ function Categories() {
   // Render: Category component
   return (
     <div className={style.container}>
+      {toastQueue.map((toast, index) => (
+        <Snackbar
+          key={index}
+          open={true}
+          autoHideDuration={4000}
+          onClose={handleToastClose}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          TransitionComponent={Slide}
+          style={{ marginTop: index * 48, marginBottom: 48}}
+        >
+          <Alert severity={toast.type} onClose={handleToastClose} sx={{ width: '100%' }}>
+            {toast.message}
+          </Alert>
+        </Snackbar>
+      ))}
       <div className={style.header}>
-        <span>Funcionário</span>
+        <span>Categoria</span>
         <Users weight="fill" size={32} color="var(--primary)" />
       </div>
       <div className={style.actions}>
